@@ -71,15 +71,12 @@ defmodule Mongo.Cursor do
         #   {[doc], state(state, buffer: [], limit: 0)}
 
         state(buffer: [], limit: limit, conn: conn, cursor: cursor) = state ->
-          opts = batch_size(limit, opts)
-          batch_size = Keyword.get(opts, :batch_size)
-
           case Mongo.get_more(conn, coll, cursor, opts) do
             {:ok, %{"cursor" => %{"id" => cursor, "nextBatch" => []}}} ->
               {:halt, state(state, cursor: cursor)}
 
             {:ok, %{"cursor" => %{"id" => cursor, "nextBatch" => docs}}} ->
-              {docs, state(state, cursor: cursor, limit: new_limit(limit, batch_size))}
+              {docs, state(state, cursor: cursor, limit: limit)}
 
             {:error, error} ->
               raise error
